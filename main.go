@@ -21,7 +21,7 @@ func init() {
 	App = offiaccount.New(config)
 }
 
-func test() {
+func main() {
 
 	config_file := &draft.ConfigFile{
 		MarkdownFilePath: "demo/assets/test.md",
