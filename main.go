@@ -1,4 +1,4 @@
-package demo
+package main
 
 import (
 	"fmt"
@@ -22,11 +22,10 @@ func init() {
 }
 
 func main() {
-
 	config_file := &draft.ConfigFile{
-		MarkdownFilePath: "demo/assets/test.md",
-		CssFilePath:      "demo//asstes/xzdnf-wechat.css",
-		ImagePath:        "demo/assets/img.jpg",
+		MarkdownFilePath: "assets/test.md",
+		CssFilePath:      "assets/xzdnf-wechat.css",
+		ImagePath:        "assets/img.jpg",
 		Title:            "test",
 		Author:           "c",
 		Digest:           "c",

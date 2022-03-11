@@ -7,3 +7,6 @@ markdown 转成微信公众号格式 demo
 - go mod tidy
 
 - go run main.go
+
+#### 注意事项
+- 当想要将参考链接移动到最下方的参考区块中，需要注意段落中别出现a字母开头的字符串
