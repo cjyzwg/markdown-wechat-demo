@@ -3,7 +3,7 @@ module markdown-wechat-demo
 go 1.17
 
 require (
-	github.com/cjyzwg/markdown-wechat v1.0.8
+	github.com/cjyzwg/markdown-wechat v1.0.10
 	github.com/fastwego/offiaccount v1.0.1
 	github.com/spf13/viper v1.10.1
 )

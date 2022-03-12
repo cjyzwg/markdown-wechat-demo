@@ -1,98 +1,141 @@
-#### **背景**
-- 有自己的博客网站，以及博客小程序
+### 一、背景
+- 之前使用的翻墙工具需要再次付费，想要免费怎么办？
 
-- 想更新公众号，一直没有动力去写，一个是自己的文笔实在是太弱，二个是觉得公众号的更新很麻烦，每次都需要去更新，尤其图片要重新上传，这就很麻烦，然后有些样式也不符合要求
+### 二、解决办法
 
-- 前一阵子，看了一个大佬写的无痛苦更新公众号，他写了一个python的插件，受益良多，正在向他学习，大佬的[博客](https://catcoding.me/)网址，公众号是程序员的喵，有兴趣可以关注下
+- 1.买国外的vps自行搭建服务器，算了下光买一个vps主机的价格，还不如直接续租vpn呢
+- 2.使用免费的翻墙流量的软件，通常是需要签到（本文采用的办法）
 
-- 但是别人的东西必须得适用于自己才好，大佬的插件比较精简，但是样式不是我喜欢的，我想要追加css进去，这样可以随意替换css，其次本人主营php，博客是用go开发的，python插件有点突兀，所以这也让我重新拾起go，开发了一个类似他的那个插件的go版本
 
-- [链接demo](https://github.com/cjyzwg/markdown-wechat-demo)
+### 三、安装环境 
+- 1.使用树莓派作为vpn实现科学上网，树莓派烧录的是debian-pi plus++版本，**注意：树莓派的版本基本上都是arm架构**  
+- 2.基于 [v2free机场](https://v2free.net/) ，文档也足够详细，非常ns，正常注册都会有1g左右的流量，然后每天签到会获得300~500M流量，对于本人已经足够用。  
 
-#### **安装**
 
-```shell
+### 四、安装
 
-git clone https://github.com/cjyzwg/markdown-wechat-demo
+- 使用的是linux for clash arm7版本,都是在root用户下操作的（[参考链接](https://v2free.net/doc/#/linux/clash)）
 
-go mod tidy
+#### **安装clash**
 
-go run main.go（即可添加到草稿箱）
+- 1.下载linux arm clash版本
+
+>wget -O clash.gz https://github.com/Dreamacro/clash/releases/download/v1.9.0/clash-linux-armv7-v1.9.0.gz  
+
+- 2.解压到当前文件夹下  
+
+>gzip -f clash.gz -d    
+
+- 3.添加可执行权限  
+
+>chmod +x clash  
+
+- 4.移动到 /usr/local/bin 目录  
+
+>mv clash /usr/local/bin/clash  
+
+- 5.clash -v 命令看是否安装成功,出现以下命令说明安装成功  
+
+>Clash v1.9.0 linux arm with go1.17.5 Sun Jan  2 03:13:32 UTC 2022
+
+####   **添加配置文件**
+- 1.生成config.yml文件 在~/.config/clash/config.yml
+
+>clash
+
+- 2.下载v2free机场的配置文件，覆盖掉config.yml
+
+>wget -U "Mozilla/6.0" -O ~/.config/clash/config.yaml  你的Clash订阅链接网址
+
+- 3.下载.mmdb文件，Country.mmdb为全球IP库，可以实现各个国家的IP信息解析和地理定位，没有这个文件clash是无法运行的 
+
+>wget -O Country.mmdb https://www.sub-speeder.com/client-download/Country.mmdb
+
+- 4.启动clash
+
+>clash
+
+`ps:如果端口already bind，请在config.yml中配置新的端口即可。`
+
+- 5.安装clash的webui界面（可选）
+
+>wget https://github.com/haishanh/yacd/archive/gh-pages.zip  
+
+>unzip gh-pages.zip  
+
+>mv yacd-gh-pages/ dashboard/  
+
+>在config.yml中添加两行 secret: "" external-ui: dashboard  
+
+>在浏览器里面访问 http://serverip:9090/ui/ 来调试 Clash>>
+
+
+
+#### **添加开机自启动**
+- 1.在 /lib/systemd/system/ 目录下创建 clash@.service 文件
+
+>nano /lib/systemd/system/clash@.service  
+
+`写入以下内容（别修改）然后保存：`
+
+```
+	
+[Unit]
+Description=A rule based proxy in Go for %i.
+After=network.target
+
+[Service]
+Type=simple
+User=%i
+Restart=on-abort
+ExecStart=/usr/local/bin/clash
+
+[Install]
+WantedBy=multi-user.target
 
 ```
 
+		
+- 2.重新加载 systemd 模块
 
-#### **脚本**
-用于添加草稿箱，以及提交github仓库
+>systemctl daemon-reload  
 
-```shell
-/bin/sh
-configPath=.vscode/.env
-function get_config() {
-    local configName=$1
-    sed -n 's/^[[:space:]]*'$configName'[[:space:]]*=[[:space:]]*\(.*[^[:space:]]\)\([[:space:]]*\)$/\1/p' $configPath
-}
+- 3.启动clash服务，user 表示的是当前用户名，本文这里是root
 
-function set_config() {
-    local configName=$1
-    local confgValue=$2
-    sed -i "" -e "s:$configName=.*:$configName=$confgValue:g" ${configPath}
-}
-function publish_draft(){
+>systemctl start clash@user  
 
-    mpath=$(git status | awk '/modified/{print $0}' | awk -F "[:]" '{print $2}' )
-    read -p "markdown文件变动目录:[$mpath],继续执行下一步，回车键继续[y/n]" isContinue
-    set_config MarkdownFilePath $mpath
-    
-    Digest=$(get_config Digest)
-    read -p "是否更换二级小标题:[$Digest],是否更换,回车键不更换[y/n]" isContinue
-    # 转成小写
-    iscontinue=$(echo $isContinue | tr '[A-Z]' '[a-z]')
-    if [ "$iscontinue" = 'y' ]; then
-        read -p '开始更换二级小标题:' Digest
-        set_config Digest $Digest
-    else
-        echo "不更换二级小标题"
-    fi
+- 4.设置开机自启动
+
+>systemctl enable clash@user  
+
+- 5.尝试一下
+
+>reboot
+
+#### **chrome配置SwitchyOmega**
+- 1.下载Proxy SwitchyOmega
+
+>https://proxy-switchyomega.com/file/Proxy-SwitchyOmega-Chromium-2.5.15.crx
+
+- 2.将crx文件后缀名修改为.zip格式，然后解压到当前文件夹下
 
 
-    ipath=$(get_config ImagePath)
-    read -p "图片标题文件目录:[$ipath],是否更换,回车键不更换[y/n]" isContinue
-    # 转成小写
-    iscontinue=$(echo $isContinue | tr '[A-Z]' '[a-z]')
-    if [ "$iscontinue" = 'y' ]; then
-        read -p '开始更换目录:' ipath
-        set_config ImagePath $ipath
-    else
-        echo "不更换目录"
-    fi
+- 3.打开chrome 设置-》扩展-》开发者模式，加载刚才的解压文件夹    
 
 
- 
-    Author=$(get_config Author)
-    read -p "是否更换作者名称:[$Author],是否更换,回车键不更换[y/n]" isContinue
-    # 转成小写
-    iscontinue=$(echo $isContinue | tr '[A-Z]' '[a-z]')
-    if [ "$iscontinue" = 'y' ]; then
-        read -p '开始更换作者名称:' Author
-        set_config Author $Author
-    else
-        echo "不更换作者名称"
-    fi
-    echo "开始执行发布草稿"
-    cd .vscode/ && go run main.go
+- 4.本地树莓派的地址是局域网地址192.168.1.107，之前配置的内网地址是10.8.0.14    
 
 
-}
-function add_git(){
-    local msg=$1
-    git pull origin master
-    git add .
-    git commit -m $msg
-    git push origin master
-}
-echo "需要发布到草稿箱"
+![avatar](https://blog.hexiefamily.xin/assets/switchomega.png)     
 
-publish_draft
+- 5.这样就实现了远程也可以科学上网的需求  
 
-```
+#### **添加自动脚本，每日签到**
+- 1.拆解v2free的登录模块和签到模块.
+- 2.开启cron定时脚本，每天执行.
+- 3.使用企业微信提醒每天签到多少流量，还剩多少流量.
+
+
+### 五、未来改进
+
+- v2free 更新，添加定时脚本更新订阅地址   
