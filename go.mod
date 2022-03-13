@@ -3,7 +3,7 @@ module markdown-wechat-demo
 go 1.17
 
 require (
-	github.com/cjyzwg/markdown-wechat v1.0.10
+	github.com/cjyzwg/markdown-wechat v1.0.11
 	github.com/fastwego/offiaccount v1.0.1
 	github.com/spf13/viper v1.10.1
 )
@@ -26,6 +26,8 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
+	github.com/tdewolff/minify/v2 v2.10.0 // indirect
+	github.com/tdewolff/parse/v2 v2.5.27 // indirect
 	github.com/vanng822/css v1.0.1 // indirect
 	github.com/vanng822/go-premailer v1.20.1 // indirect
 	golang.org/x/net v0.0.0-20210916014120-12bc252f5db8 // indirect
